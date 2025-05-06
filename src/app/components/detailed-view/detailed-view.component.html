@@ -1,54 +1,26 @@
 <div class="detailed-container">
-  <h2>Detailed View</h2>
+  <!-- Left: Sampling Times -->
+  <mat-nav-list class="sampling-list">
+    <mat-list-item *ngFor="let time of samplingTimes" (click)="onSamplingTimeSelect(time)">
+      {{ time }}
+    </mat-list-item>
+  </mat-nav-list>
 
-  <div *ngIf="errorMessage" class="error-message">
-    {{ errorMessage }}
-  </div>
-
-  <div class="list-container">
-    <mat-nav-list>
-      <a mat-list-item
-         *ngFor="let time of samplingTimes"
-         [class.active]="selectedData?.SamplingTime === time"
-         (click)="onSamplingTimeSelect(time)">
-        {{ time | date:'medium' }}
-      </a>
-    </mat-nav-list>
-  </div>
-
+  <!-- Right: Dynamic Form -->
   <div class="form-container" *ngIf="selectedData">
     <form [formGroup]="form" (ngSubmit)="onSubmit()">
-      <div *ngFor="let prop of selectedData.Properties">
-        <ng-container *ngIf="getInputType(prop.Value) !== 'checkbox'">
-          <mat-form-field>
-            <mat-label>{{ prop.Label }}</mat-label>
-            <input matInput
-                   [type]="getInputType(prop.Value)"
-                   [formControlName]="prop.Label">
-          </mat-form-field>
-        </ng-container>
+      <div *ngFor="let property of selectedData?.Properties">
+        <mat-form-field *ngIf="getInputType(property.Value) !== 'checkbox'" appearance="fill">
+          <mat-label>{{ property.Label }}</mat-label>
+          <input matInput [type]="getInputType(property.Value)" [formControlName]="property.Label" />
+        </mat-form-field>
 
-        <ng-container *ngIf="getInputType(prop.Value) === 'checkbox'">
-          <mat-checkbox [formControlName]="prop.Label">
-            {{ prop.Label }}
-          </mat-checkbox>
-        </ng-container>
+        <mat-checkbox *ngIf="getInputType(property.Value) === 'checkbox'" [formControlName]="property.Label">
+          {{ property.Label }}
+        </mat-checkbox>
       </div>
 
-      <div class="button-container">
-        <button mat-raised-button
-                color="primary"
-                type="submit"
-                [disabled]="!form.valid || isSubmitting">
-          {{ isSubmitting ? 'Saving...' : 'Save Changes' }}
-        </button>
-        <button mat-button
-                type="button"
-                [disabled]="isSubmitting"
-                routerLink="/">
-          Cancel
-        </button>
-      </div>
+      <button mat-raised-button color="primary" type="submit">Save</button>
     </form>
   </div>
 </div>

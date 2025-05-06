@@ -1,27 +1,79 @@
-# ObservationApp
+# Observation App
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 16.2.16.
+This is an Angular 16 application that displays and manages observation data. The application features two main views:
 
-## Development server
+1. Summary View: Displays observation data in a table format
+2. Detailed View: Allows viewing and editing individual observations
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+## Features
 
-## Code scaffolding
+- Material Design UI components
+- Responsive layout
+- Data management through JSON file
+- Form validation
+- Dynamic form generation based on data structure
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+## Prerequisites
 
-## Build
+- Node.js (v14 or later)
+- npm (v6 or later)
+- Angular CLI (v16)
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+## Installation
 
-## Running unit tests
+1. Clone the repository:
+```bash
+git clone <repository-url>
+cd observation-app
+```
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+2. Install dependencies:
+```bash
+npm install
+```
 
-## Running end-to-end tests
+3. Start the development server:
+```bash
+ng serve
+```
 
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
+4. Navigate to `http://localhost:4200` in your browser
 
-## Further help
+## Project Structure
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+```
+src/
+├── app/
+│   ├── components/
+│   │   ├── summary-view/
+│   │   └── detailed-view/
+│   │   ├── models/
+│   │   └── observation.model.ts
+│   │   └── services/
+│   │   └── observation.service.ts
+│   └── assets/
+│       └── data.json
+```
+
+## Development
+
+- The application uses Angular Material for UI components
+- Data is stored in `src/assets/data.json`
+- The service layer handles data operations
+- Components are organized by feature
+
+## Building for Production
+
+```bash
+ng build --prod
+```
+
+## Running Tests
+
+```bash
+ng test
+```
+
+## License
+
+This project is licensed under the MIT License.

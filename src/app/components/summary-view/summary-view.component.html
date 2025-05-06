@@ -1,0 +1,36 @@
+<div class="summary-container">
+  <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
+    <!-- Sampling Time Column -->
+    <ng-container matColumnDef="samplingTime">
+      <th mat-header-cell *matHeaderCellDef>Sampling Time</th>
+      <td mat-cell *matCellDef="let element">{{element.samplingTime}}</td>
+    </ng-container>
+
+    <!-- Project Name Column -->
+    <ng-container matColumnDef="projectName">
+      <th mat-header-cell *matHeaderCellDef>Project Name</th>
+      <td mat-cell *matCellDef="let element">{{element.projectName}}</td>
+    </ng-container>
+
+    <!-- Construction Count Column -->
+    <ng-container matColumnDef="constructionCount">
+      <th mat-header-cell *matHeaderCellDef>Construction Count</th>
+      <td mat-cell *matCellDef="let element">{{element.constructionCount}}</td>
+    </ng-container>
+
+    <!-- Is Completed Column -->
+    <ng-container matColumnDef="isCompleted">
+      <th mat-header-cell *matHeaderCellDef>Is Completed</th>
+      <td mat-cell *matCellDef="let element">{{element.isCompleted}}</td>
+    </ng-container>
+
+    <!-- Road Length Column -->
+    <ng-container matColumnDef="roadLength">
+      <th mat-header-cell *matHeaderCellDef>Road Length</th>
+      <td mat-cell *matCellDef="let element">{{element.roadLength}}</td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+  </table>
+</div>

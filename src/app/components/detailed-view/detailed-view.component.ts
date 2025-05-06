@@ -1,51 +1,98 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms';
-import { ObservationService } from '../../services/observation.service';
-import { Observation, Data, Property } from '../../models/observation.model';
+import { ActivatedRoute, Router } from '@angular/router';
+import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { DataService } from '../../../app/services/data.service';
+import { ObservationData, Property } from '../../../app/models/observation-data.model';
+import { CommonModule } from '@angular/common';
+import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatListModule } from '@angular/material/list';
 
 @Component({
   selector: 'app-detailed-view',
   templateUrl: './detailed-view.component.html',
-  styleUrls: ['./detailed-view.component.scss']
+  styleUrls: ['./detailed-view.component.scss'],
+  standalone: true,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    MatButtonModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatCheckboxModule,
+    MatListModule
+  ]
 })
 export class DetailedViewComponent implements OnInit {
-  observation: Observation | null = null;
-  selectedData: Data | null = null;
   form: FormGroup;
+  selectedData: ObservationData | null = null;
   samplingTimes: string[] = [];
+  isSubmitting = false;
+  errorMessage = '';
 
   constructor(
-    private observationService: ObservationService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private route: ActivatedRoute,
+    private router: Router,
+    private dataService: DataService
   ) {
     this.form = this.fb.group({});
   }
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.loadData();
   }
 
-  loadData() {
-    this.observationService.getObservations().subscribe((data: Observation) => {
-      this.observation = data;
-      this.samplingTimes = data.Datas.map(d => d.SamplingTime);
-      if (this.samplingTimes.length > 0) {
-        this.onSamplingTimeSelect(this.samplingTimes[0]);
+  loadData(): void {
+    this.dataService.getData().subscribe(
+      (data: ObservationData[]) => {
+        this.samplingTimes = data.map(item => item.SamplingTime);
+        
+        // Get the selected sampling time from query params
+        this.route.queryParams.subscribe(params => {
+          const samplingTime = params['samplingTime'];
+          if (samplingTime) {
+            const selectedData = data.find(item => item.SamplingTime === samplingTime);
+            if (selectedData) {
+              this.onSamplingTimeSelect(samplingTime);
+            }
+          }
+        });
+      },
+      (error: Error) => {
+        console.error('Error loading data:', error);
+        this.errorMessage = 'Failed to load data. Please try again.';
       }
-    });
+    );
   }
 
-  onSamplingTimeSelect(samplingTime: string) {
-    if (!this.observation) return;
+  onSamplingTimeSelect(samplingTime: string): void {
+    this.dataService.getData().subscribe(
+      (data: ObservationData[]) => {
+        this.selectedData = data.find(item => item.SamplingTime === samplingTime) || null;
+        if (this.selectedData) {
+          this.initializeForm();
+        }
+      },
+      (error: Error) => {
+        console.error('Error loading selected data:', error);
+        this.errorMessage = 'Failed to load selected data. Please try again.';
+      }
+    );
+  }
 
-    this.selectedData = this.observation.Datas.find(d => d.SamplingTime === samplingTime) || null;
-    if (this.selectedData) {
-      const formGroup: { [key: string]: any } = {};
-      this.selectedData.Properties.forEach(prop => {
+  initializeForm(): void {
+    if (!this.selectedData) return;
+
+    const formGroup: { [key: string]: any } = {};
+    if (this.selectedData.Properties) {
+      this.selectedData.Properties.forEach((prop: Property) => {
         formGroup[prop.Label] = [prop.Value];
       });
-      this.form = this.fb.group(formGroup);
     }
+    this.form = this.fb.group(formGroup);
   }
 
   getInputType(value: any): string {
@@ -54,34 +101,30 @@ export class DetailedViewComponent implements OnInit {
     return 'text';
   }
 
-  onSubmit() {
-    if (!this.observation || !this.selectedData) return;
+  onSubmit(): void {
+    if (this.form.valid && this.selectedData) {
+      this.isSubmitting = true;
+      this.errorMessage = '';
 
-    const updatedProperties: Property[] = Object.keys(this.form.value).map(key => ({
-      Label: key,
-      Value: this.form.value[key]
-    }));
+      const updatedData: ObservationData = {
+        ...this.selectedData,
+        Properties: this.selectedData.Properties.map((prop: Property) => ({
+          ...prop,
+          Value: this.form.get(prop.Label)?.value
+        }))
+      };
 
-    const updatedData: Data = {
-      ...this.selectedData,
-      Properties: updatedProperties
-    };
-
-    const updatedObservation: Observation = {
-      ...this.observation,
-      Datas: this.observation.Datas.map(d => 
-        d.SamplingTime === this.selectedData?.SamplingTime ? updatedData : d
-      )
-    };
-
-    this.observationService.updateObservation(updatedObservation).subscribe(
-      response => {
-        console.log('Data updated successfully');
-        this.loadData();
-      },
-      error => {
-        console.error('Error updating data:', error);
-      }
-    );
+      this.dataService.updateData(updatedData).subscribe(
+        () => {
+          this.isSubmitting = false;
+          this.router.navigate(['/']);
+        },
+        (error: Error) => {
+          console.error('Error updating data:', error);
+          this.isSubmitting = false;
+          this.errorMessage = 'Failed to save changes. Please try again.';
+        }
+      );
+    }
   }
 }

@@ -1,52 +1,85 @@
 import { Component, OnInit } from '@angular/core';
-import { ObservationService } from '../../services/observation.service';
-import { Observation, Data } from '../../models/observation.model';
+import { Router } from '@angular/router';
+import { DataService } from '../../../app/services/data.service';
+import { ObservationData, Property } from '../../../app/models/observation-data.model';
+import { MatTableModule } from '@angular/material/table';
+import { CommonModule } from '@angular/common';
+
+interface TableRow {
+  samplingTime: string;
+  projectName: string;
+  constructionCount: string;
+  isCompleted: string;
+  roadLength: string;
+}
 
 @Component({
   selector: 'app-summary-view',
   templateUrl: './summary-view.component.html',
-  styleUrls: ['./summary-view.component.scss']
+  styleUrls: ['./summary-view.component.scss'],
+  standalone: true,
+  imports: [CommonModule, MatTableModule]
 })
 export class SummaryViewComponent implements OnInit {
-  displayedColumns: string[] = ['samplingTime', 'projectName', 'constructionCount', 'isCompleted', 'roadLength'];
-  dataSource: any[] = [];
+  displayedColumns: string[] = [
+    'samplingTime',
+    'projectName',
+    'constructionCount',
+    'isCompleted',
+    'roadLength'
+  ];
+  dataSource: TableRow[] = [];
 
-  constructor(private observationService: ObservationService) {}
+  constructor(
+    private dataService: DataService,
+    private router: Router
+  ) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.loadData();
   }
 
-  loadData() {
-    this.observationService.getObservations().subscribe((data: Observation) => {
-      this.dataSource = data.Datas.map(item => {
-        const row: any = {
-          samplingTime: new Date(item.SamplingTime).toLocaleString(),
-          projectName: '',
-          constructionCount: '',
-          isCompleted: '',
-          roadLength: ''
-        };
+  loadData(): void {
+    this.dataService.getData().subscribe({
+      next: (data: ObservationData[]) => {
+        this.dataSource = data.map(item => {
+          const row: TableRow = {
+            samplingTime: item.SamplingTime,
+            projectName: '',
+            constructionCount: '',
+            isCompleted: '',
+            roadLength: ''
+          };
 
-        item.Properties.forEach(prop => {
-          switch(prop.Label) {
-            case 'Project Name':
-              row.projectName = prop.Value;
-              break;
-            case 'Construction Count':
-              row.constructionCount = prop.Value;
-              break;
-            case 'Is Construction Completed':
-              row.isCompleted = prop.Value;
-              break;
-            case 'Length of the road':
-              row.roadLength = prop.Value;
-              break;
+          if (item.Properties && Array.isArray(item.Properties)) {
+            item.Properties.forEach((prop: Property) => {
+              switch(prop.Label) {
+                case 'Project Name':
+                  row.projectName = prop.Value;
+                  break;
+                case 'Construction Count':
+                  row.constructionCount = prop.Value;
+                  break;
+                case 'Is Construction Completed':
+                  row.isCompleted = prop.Value;
+                  break;
+                case 'Length of the road':
+                  row.roadLength = prop.Value;
+                  break;
+              }
+            });
           }
-        });
 
-        return row;
-      });
+          return row;
+        });
+      },
+      error: (error: Error) => {
+        console.error('Error loading data:', error);
+      }
     });
+  }
+
+  onRowClick(element: TableRow): void {
+    this.router.navigate(['/detailed'], { queryParams: { samplingTime: element.samplingTime } });
   }
 }

@@ -1,16 +1,39 @@
 .summary-container {
   padding: 20px;
 
+  h2 {
+    margin-bottom: 20px;
+    color: #333;
+  }
+
   table {
     width: 100%;
+    margin-bottom: 20px;
   }
 
-  .mat-header-cell {
+  .mat-mdc-row {
+    cursor: pointer;
+    &:hover {
+      background-color: #f5f5f5;
+    }
+  }
+
+  .mat-mdc-header-cell {
     font-weight: bold;
-    color: rgba(0, 0, 0, 0.87);
+    color: #333;
+    background-color: #f8f9fa;
   }
 
-  .mat-cell {
-    padding: 16px;
+  .mat-mdc-cell {
+    padding: 12px 16px;
+  }
+
+  .clickable {
+    cursor: pointer;
+    color: #1976d2;
+    
+    &:hover {
+      text-decoration: underline;
+    }
   }
 }

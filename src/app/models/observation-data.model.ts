@@ -10,14 +10,10 @@ export interface Data {
 }
 
 export interface ObservationData {
-  // SamplingTime: any;
-  // Properties: any;
-  // Id: number;
   Name?: string;
   Datas?: Data[];
 
   id: string;
-  // id: number;
   SamplingTime: string;
   Properties: Property[];
 }

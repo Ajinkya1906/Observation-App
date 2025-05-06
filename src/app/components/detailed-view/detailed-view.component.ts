@@ -31,6 +31,7 @@ export class DetailedViewComponent implements OnInit {
   samplingTimes: string[] = [];
   isSubmitting = false;
   errorMessage = '';
+  selectedSamplingTime: string | null = null; // Track the selected sampling time
 
   constructor(
     private fb: FormBuilder,
@@ -41,34 +42,49 @@ export class DetailedViewComponent implements OnInit {
     this.form = this.fb.group({});
   }
 
+  // ngOnInit(): void {
+  //   const idParam = this.route.snapshot.paramMap.get('id');
+  //   const id = Number(idParam);
+
+  //   if (idParam !== null && !isNaN(id)) {
+  //     this.loadData(id);
+  //   }
+  // }
+
   ngOnInit(): void {
-    this.loadData();
+    const id = this.route.snapshot.paramMap.get('id');
+    if (id !== null) {
+      this.loadData(id);
+    }
   }
 
-  loadData(): void {
-    this.dataService.getData().subscribe(
-      (data: ObservationData[]) => {
+  
+  loadData(id: string): void {
+    this.dataService.getData().subscribe({
+      next: (data: ObservationData[]) => {
+        // Update samplingTimes with the available sampling times
         this.samplingTimes = data.map(item => item.SamplingTime);
-        
-        // Get the selected sampling time from query params
-        this.route.queryParams.subscribe(params => {
-          const samplingTime = params['samplingTime'];
-          if (samplingTime) {
-            const selectedData = data.find(item => item.SamplingTime === samplingTime);
-            if (selectedData) {
-              this.onSamplingTimeSelect(samplingTime);
-            }
-          }
-        });
+
+        // Filter data based on id
+        this.selectedData = data.find(item => item.id === id) || null;
+  console.log('Selected Data:', this.selectedData);
+  
+
+        if (this.selectedData) {
+          this.initializeForm();
+        } else {
+          this.errorMessage = 'Sample data not found.';
+        }
       },
-      (error: Error) => {
+      error: (error: any) => {
         console.error('Error loading data:', error);
         this.errorMessage = 'Failed to load data. Please try again.';
       }
-    );
+    });
   }
 
   onSamplingTimeSelect(samplingTime: string): void {
+    this.selectedSamplingTime = samplingTime; // Update the selected sampling time
     this.dataService.getData().subscribe(
       (data: ObservationData[]) => {
         this.selectedData = data.find(item => item.SamplingTime === samplingTime) || null;
@@ -101,19 +117,83 @@ export class DetailedViewComponent implements OnInit {
     return 'text';
   }
 
+  // onSubmit(): void {
+  //   if (this.form.valid && this.selectedData) {
+  //     this.isSubmitting = true;
+  //     this.errorMessage = '';
+
+  //     const updatedData: ObservationData = {
+  //       ...this.selectedData,
+  //       id: this.selectedData.id,
+  //       Properties: this.selectedData.Properties.map((prop: Property) => ({
+  //         ...prop,
+  //         Value: this.form.get(prop.Label)?.value
+  //       }))
+  //     };
+
+  //     this.dataService.updateData(updatedData).subscribe(
+  //       () => {
+  //         this.isSubmitting = false;
+  //         this.router.navigate(['/']);
+  //       },
+  //       (error: Error) => {
+  //         console.error('Error updating data:', error);
+  //         this.isSubmitting = false;
+  //         this.errorMessage = 'Failed to save changes. Please try again.';
+  //       }
+  //     );
+  //   }
+    
+  // }
+
+  // onSubmit(): void {
+  //   if (this.form.valid && this.selectedData) {
+  //     this.isSubmitting = true;
+  //     this.errorMessage = '';
+  
+  //     // Create the updated data object, preserving the id and updating the Properties based on the form values
+  //     const updatedProperties = this.selectedData.Properties.map((prop: Property) => {
+  //       return {
+  //         Label: prop.Label,
+  //         Value: this.form.get(prop.Label)?.value
+  //       };
+  //     });
+  
+  //     // Log the updated data to verify
+  //     console.log('Updated Data with id:', updatedProperties);
+  
+  //     // Call updateData from the service and pass the updated properties
+  //     this.dataService.updateData(this.selectedData.id, updatedProperties).subscribe(
+  //       () => {
+  //         this.isSubmitting = false;
+  //         this.router.navigate(['/']); // Navigate after successful update
+  //       },
+  //       (error: Error) => {
+  //         console.error('Error updating data:', error);
+  //         this.isSubmitting = false;
+  //         this.errorMessage = 'Failed to save changes. Please try again.';
+  //       }
+  //     );
+  //   }
+  // }
+  
+
   onSubmit(): void {
     if (this.form.valid && this.selectedData) {
       this.isSubmitting = true;
       this.errorMessage = '';
-
+    
+      // Create the updated data object with the same 'id' as the original
       const updatedData: ObservationData = {
         ...this.selectedData,
+        id: this.selectedData.id, // Make sure 'id' is passed
         Properties: this.selectedData.Properties.map((prop: Property) => ({
           ...prop,
           Value: this.form.get(prop.Label)?.value
         }))
       };
-
+  
+      // Call the update method with the updated data object
       this.dataService.updateData(updatedData).subscribe(
         () => {
           this.isSubmitting = false;
@@ -127,4 +207,5 @@ export class DetailedViewComponent implements OnInit {
       );
     }
   }
+  
 }

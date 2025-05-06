@@ -6,6 +6,7 @@ import { MatTableModule } from '@angular/material/table';
 import { CommonModule } from '@angular/common';
 
 interface TableRow {
+  id: string;
   samplingTime: string;
   projectName: string;
   constructionCount: string;
@@ -44,6 +45,7 @@ export class SummaryViewComponent implements OnInit {
       next: (data: ObservationData[]) => {
         this.dataSource = data.map(item => {
           const row: TableRow = {
+            id: item.id,
             samplingTime: item.SamplingTime,
             projectName: '',
             constructionCount: '',
@@ -53,20 +55,35 @@ export class SummaryViewComponent implements OnInit {
 
           if (item.Properties && Array.isArray(item.Properties)) {
             item.Properties.forEach((prop: Property) => {
-              switch(prop.Label) {
+              // switch(prop.Label) {
+              //   case 'Project Name':
+              //     row.projectName = prop.Value;
+              //     break;
+              //   case 'Construction Count':
+              //     row.constructionCount = prop.Value;
+              //     break;
+              //   case 'Is Construction Completed':
+              //     row.isCompleted = prop.Value;
+              //     break;
+              //   case 'Length of the road':
+              //     row.roadLength = prop.Value;
+              //     break;
+              // }
+              switch (prop.Label) {
                 case 'Project Name':
-                  row.projectName = prop.Value;
+                  row.projectName = String(prop.Value);
                   break;
                 case 'Construction Count':
-                  row.constructionCount = prop.Value;
+                  row.constructionCount = String(prop.Value);
                   break;
                 case 'Is Construction Completed':
-                  row.isCompleted = prop.Value;
+                  row.isCompleted = String(prop.Value);
                   break;
                 case 'Length of the road':
-                  row.roadLength = prop.Value;
+                  row.roadLength = String(prop.Value);
                   break;
               }
+              
             });
           }
 
@@ -79,7 +96,19 @@ export class SummaryViewComponent implements OnInit {
     });
   }
 
+//   onRowClick(element: TableRow): void {
+//     this.router.navigate(['/detailed'], {
+//       queryParams: {
+//         id: element.id,
+//         samplingTime: element.samplingTime
+//       }
+//     });
+//  }
+// 
+// 
+
   onRowClick(element: TableRow): void {
-    this.router.navigate(['/detailed'], { queryParams: { samplingTime: element.samplingTime } });
-  }
+  this.router.navigate([`/detailed/${element.id}`]);
+}
+
 }

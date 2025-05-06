@@ -4,6 +4,6 @@ import { DetailedViewComponent } from './components/detailed-view/detailed-view.
 
 export const routes: Routes = [
   { path: '', component: SummaryViewComponent },
-  { path: 'detailed', component: DetailedViewComponent },
+  { path: 'detailed/:id', component: DetailedViewComponent },
   { path: '**', redirectTo: '' }
 ];

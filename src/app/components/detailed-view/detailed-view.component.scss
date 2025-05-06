@@ -23,3 +23,10 @@
 mat-form-field {
   width: 100%;
 }
+
+// 
+.sampling-list .mat-list-item.selected {
+  background-color: #f0f0f0; /* Light gray background for selected */
+  font-weight: bold; /* Bold text for selected item */
+  color: #3f51b5; /* Blue text color for selected item */
+}

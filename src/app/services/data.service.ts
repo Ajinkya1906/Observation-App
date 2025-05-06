@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { ObservationData } from '../models/observation-data.model';
+import { Observable, of, throwError } from 'rxjs';
+import { ObservationData, Property } from '../models/observation-data.model';
 import { switchMap, map } from 'rxjs/operators';
 
 interface DataWithId {
@@ -13,46 +13,93 @@ interface DataWithId {
   providedIn: 'root'
 })
 export class DataService {
-  private apiUrl = 'http://localhost:3000/Datas';
+  private apiUrl = 'http://localhost:4000/Datas';
+  private observationData: ObservationData[] = [];
 
   constructor(private http: HttpClient) {}
 
+  // getData(): Observable<ObservationData[]> {
+  //   return this.http.get<any[]>(this.apiUrl).pipe(
+  //     map(data => {
+  //       // Filter out entries with id (they are duplicates)
+  //       return data.filter(item => !('id' in item));
+  //     })
+  //   );
+  // }
+
   getData(): Observable<ObservationData[]> {
-    return this.http.get<any[]>(this.apiUrl).pipe(
-      map(data => {
-        // Filter out entries with id (they are duplicates)
-        return data.filter(item => !('id' in item));
-      })
-    );
+    return this.http.get<ObservationData[]>(this.apiUrl);
   }
+  
+ 
 
-  updateData(data: ObservationData): Observable<ObservationData> {
-    // First get all data to find the existing record
-    return this.http.get<any[]>(this.apiUrl).pipe(
-      switchMap(allData => {
-        // Find the record with matching SamplingTime
-        const existingRecord = allData.find(item => 
-          (item[0]?.SamplingTime === data.SamplingTime || item.SamplingTime === data.SamplingTime)
-        );
-        
-        if (!existingRecord) {
-          throw new Error('Data not found');
-        }
+  // updateData(updatedData: ObservationData): Observable<ObservationData | null> {
+  //   const index = this.observationData.findIndex((item) => item.Id === updatedData.Id);
+  //   if (index !== -1) {
+  //     this.observationData[index] = updatedData;
+  //     return of(this.observationData[index]);
+  //   }
+  //   return of(null); // Now allowed
+  // }
+  
+  // updateData(updatedData: ObservationData): Observable<ObservationData | null> {
+  //   const index = this.observationData.findIndex(item => item.Id === updatedData.Id);
+  //   console.log('Updating ID:', updatedData.Id);
+  //   console.log('Found index:', index);
+  
+  //   if (index !== -1) {
+  //     this.observationData[index] = updatedData;
+  //     console.log('Updated Data:', this.observationData[index]);
+  //     return of(this.observationData[index]);
+  //   }
+  
+  //   console.warn('No matching ID found for update');
+  //   return of(null);
+  // }
+  
+  // updateData(updatedData: ObservationData): Observable<ObservationData | null> {
+  //   const index = this.observationData.findIndex(item => item.id === updatedData.id);
+  //   console.log('Updating id:', updatedData.id);
+  //   console.log('Found index:', index);
+  
+  //   if (index !== -1) {
+  //     this.observationData[index] = updatedData;
+  //     console.log('Updated Data:', this.observationData[index]);
+  //     return of(this.observationData[index]);
+  //   }
+  
+  //   console.warn('No matching id found for update');
+  //   return of(null);
+  // }
+  
 
-        // If the record has an id, use it for the update
-        if ('id' in existingRecord) {
-          const updateData: DataWithId = {
-            id: existingRecord.id,
-            0: data
-          };
-          return this.http.put<DataWithId>(`${this.apiUrl}/${existingRecord.id}`, updateData).pipe(
-            map(response => response[0])
-          );
-        } else {
-          // If no id, update the direct record
-          return this.http.put<ObservationData>(`${this.apiUrl}/${data.SamplingTime}`, data);
-        }
-      })
-    );
+  // updateData(updatedData: ObservationData): Observable<void> {
+  //   console.log('Incoming updated id:', updatedData.id);
+  //   console.log('Current stored data:', this.observationData);
+  
+  //   const index = this.observationData.findIndex(
+  //     item => item.id === updatedData.id
+  //   );
+  
+  //   if (index !== -1) {
+  //     this.observationData[index] = { ...updatedData };
+  //     console.log('Update successful at index:', index);
+  //     return of();
+  //   } else {
+  //     console.warn('No matching id found for update', updatedData.id);
+  //     return throwError(() => new Error('No matching id found for update'));
+  //   }
+  // }
+  
+
+  updateData(updatedData: ObservationData): Observable<ObservationData> {
+    const url = `${this.apiUrl}/${updatedData.id}`; // Use the 'id' from the updatedData object
+    return this.http.put<ObservationData>(url, updatedData);
   }
+  
+  // updateData(updatedData: ObservationData): Observable<ObservationData> {
+  //   const url = `${this.apiUrl}/1`; // Hardcoded ID = 1
+  //   return this.http.put<ObservationData>(url, updatedData);
+  // }
+  
 } 

@@ -1,8 +1,9 @@
 <div class="detailed-container">
   <!-- Left: Sampling Times -->
   <mat-nav-list class="sampling-list">
-    <mat-list-item *ngFor="let time of samplingTimes" (click)="onSamplingTimeSelect(time)">
-      {{ time }}
+    <mat-list-item *ngFor="let time of samplingTimes" (click)="onSamplingTimeSelect(time)"
+    [class.selected]="time === selectedSamplingTime">
+      {{ time | date: 'dd-MM-yyyy hh:mm:ss a'}}
     </mat-list-item>
   </mat-nav-list>
 

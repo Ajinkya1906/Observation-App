@@ -13,7 +13,7 @@ interface DataWithId {
   providedIn: 'root'
 })
 export class DataService {
-  private apiUrl = 'http://localhost:4000/Datas';
+  private apiUrl = 'http://localhost:3000/Datas';
   private observationData: ObservationData[] = [];
 
   constructor(private http: HttpClient) {}
